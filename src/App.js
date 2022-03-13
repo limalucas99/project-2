@@ -1,55 +1,36 @@
-import { useState, useEffect } from 'react'; // useEffect faz o trabalho de componentDidMount, componentDidUpdate e componentDidWillUnmount
+import P from 'prop-types';
+import React, { useCallback, useMemo, useState } from 'react'; // useEffect faz o trabalho de componentDidMount, componentDidUpdate e componentDidWillUnmount
 import './App.css';
+
+const Button = ({ incrementButton }) => {
+  // React.memo - salva o componente na memória
+  console.log('Filho Renderizou!');
+  return <button onClick={() => incrementButton(10)}>+</button>;
+};
+
+Button.propTypes = {
+  incrementButton: P.func,
+};
 
 function App() {
   const [counter, setCounter] = useState(0);
-  const [counter2, setCounter2] = useState(0);
 
-  // // componentDidUpdate - executa toda vez que o componente atualiza
-  // useEffect(() => {
-  //   console.log('componentDidUpdate');
-  // });
+  const incrementCounter = useCallback((num) => {
+    // A função fica memoizada em cache
+    setCounter((c) => c + num);
+  }, []); // Faz com que a função fique salva na memória e não seja recriada toda vez que o componente pai (App) é renderizado
 
-  // // componentDidMount - executa 1x
-  // useEffect(() => {
-  //   console.log('componentDidMount');
-  // }, []);
+  console.log('Pai Renderizou!');
 
-  // // Com dependência - executa toda vez que a dependência mudar
-  // useEffect(() => {
-  //   console.log('Contador mudou para', counter); // Se for utilizado qualquer elemento do estado, é uma dependência, então deve ser passada para o Array de dependências
-  // }, [counter]);
-
-  // // Com dependência - executa toda vez que a dependência mudar
-  // useEffect(() => {
-  //   console.log('Contador2 mudou para', counter2); // Se for utilizado qualquer elemento do estado, é uma dependência, então deve ser passada para o Array de dependências
-  // }, [counter2]);
-
-  // // Com dependência - executa toda vez que a dependência mudar
-  // useEffect(() => {
-  //   console.log(`Counter 1 ${counter} - Counter 2 ${counter2}`); // Se for utilizado qualquer elemento do estado, é uma dependência, então deve ser passada para o Array de dependências
-  // }, [counter, counter2]); // toda a variável utilizada dentro do useEffect deve ser passado como uma dependência
-
-  const eventFn = () => {
-    console.log('oi');
-  };
-
-  useEffect(() => {
-    document.querySelector('h1')?.addEventListener('click', eventFn);
-
-    // componentWillMount - Limpeza
-    return () => {
-      document.querySelector('h1').removeEventListener('click', eventFn);
-    };
-  });
+  const btn = useMemo(() => <Button incrementButton={incrementCounter} />, [incrementCounter]);
+  // Tudo que for usado e for externo deve estar no array de dependências
 
   return (
     <div className="App">
+      <p>Teste 3</p>
       <h1>C1: {counter}</h1>
-      <h1>C2: {counter2}</h1>
-      <button onClick={() => setCounter(counter + 1)}>+</button>
-      <br />
-      <button onClick={() => setCounter2(counter2 + 1)}>+</button>
+      {btn}
+      {/* O componente não é re-renderizado desnecessariamente */}
     </div>
   );
 }
